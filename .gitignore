@@ -1,0 +1,29 @@
+# Rust
+**/target/
+**/*.rs.bk
+# Keep core/Cargo.lock committed for reproducible CI.
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Android
+android/.gradle/
+android/.kotlin/
+android/local.properties
+android/**/build/
+
+# cargo-ndk leftover watch dylibs (not the UniFFI cdylib)
+android/app/src/main/jniLibs/**/libif_watch-*.so
+
+# Env / secrets
+.env
+*.pem
+*.key
+
+# Planning / gate docs stay local
+docs/
+/*.md
+!/README.md
