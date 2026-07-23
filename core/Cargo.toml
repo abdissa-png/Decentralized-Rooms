@@ -1,0 +1,64 @@
+[workspace]
+resolver = "2"
+members = [
+    "proto",
+    "identity",
+    "storage",
+    "sync",
+    "room",
+    "mls",
+    "discovery",
+    "transport",
+    "signal",
+    "rooms-core",
+    "spikes",
+]
+default-members = ["rooms-core"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+rust-version = "1.75"
+authors = ["Decentralized Encrypted Rooms contributors"]
+repository = "https://github.com/example/decentralized-rooms"
+description = "Decentralized Encrypted Rooms — Rust protocol core"
+
+[workspace.dependencies]
+# Pin below blake3 versions that pull cpufeatures 0.3 (edition2024 / newer rustc).
+blake3 = "=1.5.5"
+ed25519-dalek = { version = "2.1", default-features = false, features = ["std", "rand_core"] }
+rand = "0.8"
+thiserror = "1.0"
+snow = "0.10"
+# OpenMLS 0.6 is the last stable line with a small dependency surface for spikes.
+openmls = "0.6"
+openmls_rust_crypto = "0.3"
+openmls_basic_credential = "0.3"
+# Phase 1: pure-Rust KvStore MVP. RocksDB remains the production target (ADR-0003).
+sled = "0.34"
+# Phase 1 transport: 0.54 works with blake3 =1.5.5; bump only with pin ADR.
+libp2p = { version = "0.54", default-features = false, features = [
+    "tokio",
+    "tcp",
+    "quic",
+    "noise",
+    "yamux",
+    "ping",
+    "identify",
+    "macros",
+    "request-response",
+] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "net", "io-util"] }
+futures = "0.3"
+async-trait = "0.1"
+
+rooms-proto = { path = "proto" }
+rooms-identity = { path = "identity" }
+rooms-storage = { path = "storage" }
+rooms-sync = { path = "sync" }
+rooms-room = { path = "room" }
+rooms-mls = { path = "mls" }
+rooms-discovery = { path = "discovery" }
+rooms-transport = { path = "transport" }
+rooms-signal = { path = "signal" }
