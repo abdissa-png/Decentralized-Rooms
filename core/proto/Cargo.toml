@@ -1,0 +1,11 @@
+[package]
+name = "rooms-proto"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+description = "Canonical encodings for room events and identity documents"
+
+[dependencies]
+blake3 = { workspace = true }
