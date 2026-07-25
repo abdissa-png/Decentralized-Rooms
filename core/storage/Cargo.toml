@@ -1,0 +1,12 @@
+[package]
+name = "rooms-storage"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+description = "Local KvStore persistence (sled MVP; RocksDB Phase 1 swap)"
+
+[dependencies]
+rooms-proto = { workspace = true }
+sled = { workspace = true }
