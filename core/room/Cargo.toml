@@ -1,0 +1,18 @@
+[package]
+name = "rooms-room"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+description = "Room founding, membership CRDT, policies, and room_id derivation"
+
+[dependencies]
+ed25519-dalek = { workspace = true }
+rooms-identity = { workspace = true }
+rooms-mls = { workspace = true }
+rooms-proto = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+rand = { workspace = true }
