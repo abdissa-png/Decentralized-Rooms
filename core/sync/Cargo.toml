@@ -1,0 +1,16 @@
+[package]
+name = "rooms-sync"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+description = "Version vectors, Merkle/CID diff, Offer/Want/Have/Ack sync"
+
+[dependencies]
+ed25519-dalek = { workspace = true }
+rooms-proto = { workspace = true }
+rooms-storage = { workspace = true }
+
+[dev-dependencies]
+rand = { workspace = true }
