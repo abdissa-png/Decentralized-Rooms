@@ -1,0 +1,16 @@
+[package]
+name = "rooms-discovery"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+description = "Invite tokens, DHT, mDNS/BLE advertisements"
+
+[dependencies]
+ed25519-dalek = { workspace = true }
+rooms-identity = { workspace = true }
+rooms-proto = { workspace = true }
+
+[dev-dependencies]
+rand = { workspace = true }
