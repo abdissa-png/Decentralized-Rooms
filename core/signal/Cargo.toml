@@ -1,0 +1,16 @@
+[package]
+name = "rooms-signal"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+description = "SignalSession trait for 1:1 messaging (libsignal-client on Android; no novel crypto)"
+
+[features]
+default = []
+# NEVER enable in production builds. Exposes InsecureDevSession (XOR pad) for API-shape tests only.
+dev-session = []
+
+[dependencies]
+thiserror = { workspace = true }
