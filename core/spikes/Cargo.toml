@@ -1,0 +1,19 @@
+[package]
+name = "rooms-spikes"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+description = "Phase 0 learning spikes (Noise, DAG, CRDT, Kademlia, OpenMLS, libsignal)"
+publish = false
+
+[dependencies]
+blake3 = { workspace = true }
+ed25519-dalek = { workspace = true }
+rand = { workspace = true }
+thiserror = { workspace = true }
+snow = { workspace = true }
+openmls = { workspace = true }
+openmls_rust_crypto = { workspace = true }
+openmls_basic_credential = { workspace = true }
