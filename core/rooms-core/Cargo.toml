@@ -1,0 +1,19 @@
+[package]
+name = "rooms-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+description = "Thin facade re-exporting the Decentralized Encrypted Rooms core stack"
+
+[dependencies]
+rooms-discovery = { workspace = true }
+rooms-identity = { workspace = true }
+rooms-mls = { workspace = true }
+rooms-proto = { workspace = true }
+rooms-room = { workspace = true }
+rooms-signal = { workspace = true }
+rooms-storage = { workspace = true }
+rooms-sync = { workspace = true }
+rooms-transport = { workspace = true }
