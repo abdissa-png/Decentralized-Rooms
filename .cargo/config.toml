@@ -1,0 +1,5 @@
+# Android cross builds use `scripts/build-android-ffi.sh` + cargo-ndk, which
+# injects NDK clang linkers per target. Do not hardcode linkers here — that
+# breaks machines without NDK wrappers on PATH and fights cargo-ndk.
+#
+# Optional: export ANDROID_NDK_HOME / ANDROID_HOME before running the script.
