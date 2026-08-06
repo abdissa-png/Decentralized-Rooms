@@ -1,10 +1,23 @@
 # Decentralized Encrypted Rooms
 
-Invite-only encrypted messaging with a Rust protocol core and Android-first clients.
-Identity is key-based (not phone numbers). Group crypto uses MLS; 1:1 uses Signal.
+Invite-only, end-to-end encrypted messaging with a **Rust** protocol core.
+Identity is key-based. Group membership is a signed CRDT; group crypto is
+OpenMLS; 1:1 is Signal Protocol. Transports prefer QUIC via libp2p.
 
-This repository is just getting started: workspace layout, licenses, and the
-first protocol crates land next.
+## Layout
+
+```
+core/     Rust workspace (proto, identity, room, mls, sync, transport, …)
+ffi/      UniFFI (next)
+android/  Kotlin client (next)
+```
+
+## Build
+
+```bash
+cd core
+cargo test --workspace
+```
 
 ## License
 
