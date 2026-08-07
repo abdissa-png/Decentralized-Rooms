@@ -1,0 +1,344 @@
+namespace rooms {
+  /**
+   * Proto draft version string (docs/protocol).
+   */
+  string proto_draft_version();
+
+  /**
+   * Core facade crate version.
+   */
+  string core_version();
+
+  /**
+   * Identity stub hello for Android FFI smoke test.
+   */
+  string identity_hello();
+
+  /**
+   * Encode a minimal invite token v1 and return hex of the first byte (version).
+   * Smoke-tests that proto codecs are linked into the FFI cdylib.
+   */
+  string invite_token_version_byte_hex();
+
+  /**
+   * Generate master + device ed25519 keys, cross-sign, return public identifiers.
+   * Secrets stay in Rust; prefer `create_identity_bundle` for Keystore wrap.
+   */
+  CreatedIdentity create_identity();
+
+  /**
+   * Generate identity and return public fields plus an opaque secret blob for
+   * Android Keystore wrapping (API 26+). Never log `secret_blob`.
+   */
+  CreatedIdentityBundle create_identity_bundle();
+
+  /**
+   * Re-derive `identity_id` hex from a Keystore-unwrapped secret blob.
+   * Returns empty string on malformed blob.
+   */
+  string identity_id_hex_from_secret_blob(bytes secret_blob);
+
+  /**
+   * Re-derive device ed25519 verifying-key hex from a Keystore-unwrapped
+   * secret blob (same key that signs MessageEvents / invite device_vk).
+   * Returns empty string on malformed blob.
+   */
+  string device_pubkey_hex_from_secret_blob(bytes secret_blob);
+
+  /**
+   * Derive identity_id hex from a 32-byte master verifying key (64 hex chars).
+   */
+  string identity_id_hex(string master_pubkey_hex);
+
+  /**
+   * Sign a KeyPackage with the device key from `secret_blob` (answers.md §58).
+   * Returns KeyPackageBind wire hex, or empty on failure.
+   */
+  string sign_key_package_bind_hex(
+    bytes secret_blob,
+    string room_id_hex,
+    string key_package_hex
+  );
+
+  /**
+   * Build + sign a MessageEvent whose `ciphertext` is pre-sealed (e.g. by
+   * Android libsignal-client). Rust treats ciphertext as opaque bytes.
+   * `secret_blob` must be a Keystore-unwrapped IdentitySecretBlob.
+   * `room_id` must be exactly 32 bytes. Returns empty wire on failure.
+   * `causal_parent_hexes` are 64-char event-id hex CIDs (empty = root / no parents).
+   */
+  SignedMessageEventWire create_signed_text_event(
+    bytes secret_blob,
+    bytes room_id,
+    bytes ciphertext,
+    sequence<string> causal_parent_hexes
+  );
+
+  /**
+   * Found a room from Keystore-unwrapped secret blob. Returns empty room_id_hex
+   * on malformed blob. OpenMLS group create is host-tested; this is founding +
+   * membership seed only.
+   */
+  FoundedRoom create_founding_room(bytes secret_blob, u64 created_unix_secs);
+
+  /**
+   * Joiner: open a session from invite material (Invite + Accept membership).
+   * Fail-closed empty room_id when material/secret mismatch. No MLS Welcome.
+   */
+  LocalRoomSession join_room_from_invite(bytes secret_blob, string invite_material_hex);
+
+  /**
+   * Restore membership/session state after process death. The state blob does
+   * not contain identity secrets; `secret_blob` is unwrapped from Keystore.
+   */
+  LocalRoomSession local_room_session_from_state_blob(bytes secret_blob, bytes state_blob);
+
+  /**
+   * Restore an OpenMLS group session from a persisted state blob (device files).
+   * Fail-closed empty session on malformed blob.
+   */
+  MlsGroupSession mls_session_from_state_blob(bytes blob);
+};
+
+/**
+ * In-process founded/joined room for Android UI: room_id, member list, invite /
+ * join material, MessageEvent sign over opaque ciphertext. No OpenMLS seal on
+ * device here.
+ */
+interface LocalRoomSession {
+  constructor(bytes secret_blob, u64 created_unix_secs);
+
+  string room_id_hex();
+  string creator_identity_id_hex();
+  sequence<string> active_member_id_hexes();
+  u32 active_member_count();
+
+  /**
+   * InviteTokenV1 hex stub (version byte `01`). Empty on failure. No MLS Welcome.
+   */
+  string invite_token_hex(string invitee_identity_id_hex);
+
+  /**
+   * Founder: invite + founding blob for a specific invitee identity (hex).
+   * Appends Invite locally. Empty on failure. No MLS Welcome.
+   */
+  string invite_material_hex(string invitee_identity_id_hex);
+
+  /**
+   * Founder: DRIM v2 invite with optional MLS Welcome/Commit CIDs (64-hex each;
+   * empty = absent). Joiner can Want those CIDs in-band without guessing hashes.
+   */
+  string invite_material_with_welcome_hex(
+    string invitee_identity_id_hex,
+    string welcome_cid_hex,
+    string commit_cid_hex
+  );
+
+  /** Joiner: Welcome CID from DRIM v2 (empty if absent). */
+  string welcome_cid_hex();
+
+  /** Joiner: Commit CID from DRIM v2 (empty if absent). */
+  string commit_cid_hex();
+
+  /** Export membership/session state for process-restart restoration. */
+  bytes export_state_blob();
+
+  /**
+   * Admin remove/promote/demote or self leave. `action` = remove|promote|demote|leave.
+   * Returns membership event hex or empty on unauthorized / failure.
+   */
+  string membership_mutation_hex(string action, string target_identity_id_hex);
+
+  /**
+   * Apply a remote signed membership event hex (gossip). False on failure.
+   */
+  boolean apply_membership_event_hex(string event_hex);
+
+  /**
+   * Joiner: Accept receipt hex for the founder to apply. Empty if not a joiner.
+   */
+  string accept_receipt_hex();
+
+  /**
+   * Founder: apply joiner Accept receipt. Returns false on failure.
+   */
+  boolean apply_accept_receipt_hex(string receipt_hex);
+
+  /**
+   * Sign MessageEvent for this room; ciphertext opaque (caller seals offline).
+   * Empty `causal_parent_hexes` uses last signed tips persisted in this session.
+   */
+  SignedMessageEventWire sign_text_event(bytes ciphertext, sequence<string> causal_parent_hexes);
+};
+
+/**
+ * Gate 1 lab node: TCP listen/dial + Offer/Want/Have/Ack frames (same codecs as
+ * `/derooms/sync/1.0.0`). Host IT covers libp2p request-response via sync_rpc;
+ * cross-device lab uses TCP so each process drives its own socket.
+ * Optional TCP `rooms-relay` fallback when LAN dial fails (not libp2p circuit v2).
+ */
+interface SyncLabNode {
+  constructor();
+  /**
+   * Open a lab node whose EventStore/Outbox persist under `store_dir`
+   * (sled). Empty path uses in-memory store (tests).
+   */
+  [Name="with_store_dir"] constructor(string store_dir);
+
+  string local_peer_id();
+
+  /**
+   * Listen TCP; rewrite unspecified bind to advertise_ip for LAN dials.
+   * Returns dialable multiaddr `/ip4/…/tcp/…/p2p/…` or `ERROR:…`.
+   */
+  string listen_tcp(string bind_multiaddr, string advertise_ip, u32 timeout_ms);
+
+  string listen_dial_addr();
+
+  /**
+   * Drop the TCP listener so the bind port is released. Store (if sled) stays.
+   * Next `listen_tcp` rebinds. Does not wipe identity or events.
+   */
+  string release_listen();
+
+  /**
+   * Last successfully pushed or pulled event id hex (64 chars), else empty.
+   */
+  string last_tip_hex();
+
+  /**
+   * Configure TCP rooms-relay fallback. `relay_host_port` like `192.168.1.10:44099`
+   * (empty clears). `token_hex` even-length hex session token shared by both peers.
+   * Returns `ok` or `ERROR:…`.
+   */
+  string configure_relay(string relay_host_port, string token_hex);
+
+  /**
+   * Remember the peer device ed25519 verifying key (32 bytes) so reverse
+   * send on a reused TCP session can verify Have frames.
+   * Returns `ok` or `ERROR:…`.
+   */
+  string remember_peer_device_vk(bytes author_device_pubkey);
+
+  /**
+   * Provider: put signed wire in outbox, dial peer, sync; return tip hex or ERROR.
+   * Tries a parked reverse TCP session first, then direct LAN dial; on connect
+   * failure uses configured relay if set.
+   */
+  string sync_push_signed_event(
+    bytes secret_blob,
+    bytes room_id,
+    bytes wire_envelope,
+    string peer_multiaddr,
+    u32 timeout_ms
+  );
+
+  /**
+   * Consumer: wait for dialer Offer/Have; return opaque ciphertext (or ERR:… bytes).
+   * `author_device_pubkey` is 32-byte ed25519 verifying key of the sender device.
+   * Races LAN accept with relay dial when relay is configured.
+   */
+  bytes sync_pull_one_event(
+    bytes room_id,
+    bytes author_device_pubkey,
+    u32 timeout_ms
+  );
+};
+
+/**
+ * Wire envelope + event id for a signed MessageEvent (opaque ciphertext).
+ */
+dictionary SignedMessageEventWire {
+  bytes wire_envelope;
+  string event_id_hex;
+};
+
+/**
+ * Public view of a freshly generated identity (secrets stay in Rust / Keystore).
+ */
+dictionary CreatedIdentity {
+  string identity_id_hex;
+  string device_id_hex;
+  string master_pubkey_hex;
+  string device_pubkey_hex;
+};
+
+/**
+ * Public identity fields plus opaque secret blob for Keystore wrap/unwrap.
+ */
+dictionary CreatedIdentityBundle {
+  CreatedIdentity public_identity;
+  /**
+   * Opaque IdentitySecretBlob bytes. Plaintext until Keystore-wrapped.
+   * Do not log or include in analytics.
+   */
+  bytes secret_blob;
+};
+
+/**
+ * Founding room view for Android (creator seeded as sole admin).
+ */
+dictionary FoundedRoom {
+  string room_id_hex;
+  string creator_identity_id_hex;
+  sequence<string> active_member_id_hexes;
+  u32 active_member_count;
+};
+
+/**
+ * Result of MLS add-member (commit for peers + welcome for joiner).
+ * `error` non-empty on failure (commit/welcome empty).
+ */
+dictionary MlsAddResult {
+  string commit_hex;
+  string welcome_hex;
+  u64 epoch;
+  u32 member_count;
+  string error;
+};
+
+/**
+ * Result of packaging MLS Welcome+Commit as typed sync objects (Slice C).
+ */
+dictionary MlsSyncObjects {
+  string welcome_object_hex;
+  string welcome_cid_hex;
+  string commit_object_hex;
+  string commit_cid_hex;
+  string error;
+};
+
+/**
+ * On-device OpenMLS group session (create / welcome / seal / open / persist).
+ * Credential label is typically the local identity_id hex.
+ */
+interface MlsGroupSession {
+  constructor(string credential_label);
+
+  boolean is_ready();
+  boolean has_group();
+  string credential_label();
+  string export_key_package_hex();
+  /** Founder: create group; returns group_id hex or empty. */
+  string create_group();
+  string group_id_hex();
+  u64 epoch();
+  u32 member_count();
+  u32 max_members();
+  MlsAddResult add_member_key_package_hex(string key_package_hex);
+  /**
+   * Add member only if KeyPackageBind verifies under invitee device_vk.
+   * `bind_hex` = encode_key_package_bind_wire; `device_vk_hex` = 64-char ed25519.
+   */
+  MlsAddResult add_member_key_package_bind_hex(string bind_hex, string device_vk_hex);
+  /**
+   * After a successful add: wrap welcome/commit TLS as DRSO objects + CIDs for sync.
+   */
+  MlsSyncObjects package_welcome_commit_objects(string welcome_hex, string commit_hex);
+  boolean join_from_welcome_hex(string welcome_hex);
+  boolean process_commit_hex(string commit_hex);
+  string seal_text(string plaintext);
+  string open_message_hex(string message_hex);
+  string remove_member_label(string credential_label);
+  bytes export_state_blob();
+};

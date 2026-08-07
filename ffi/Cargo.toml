@@ -1,0 +1,28 @@
+[package]
+name = "rooms-ffi"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+rust-version = "1.75"
+authors = ["Decentralized Encrypted Rooms contributors"]
+description = "UniFFI bindings for Decentralized Encrypted Rooms (Android hello)"
+publish = false
+
+[lib]
+name = "rooms_ffi"
+crate-type = ["cdylib", "staticlib", "lib"]
+
+[dependencies]
+ed25519-dalek = { version = "2", default-features = false, features = ["std"] }
+rooms-core = { path = "../core/rooms-core" }
+rooms-proto = { path = "../core/proto" }
+rooms-identity = { path = "../core/identity" }
+rooms-room = { path = "../core/room" }
+rooms-mls = { path = "../core/mls" }
+rooms-sync = { path = "../core/sync" }
+rooms-storage = { path = "../core/storage" }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "net", "io-util"] }
+uniffi = { version = "0.28", features = ["cli"] }
+
+[build-dependencies]
+uniffi = { version = "0.28", features = ["build"] }
