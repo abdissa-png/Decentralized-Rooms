@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Derooms</string>
+    <string name="security_limitations_title">Security limitations</string>
+    <string name="security_limitations_body">Derooms encrypts message content end-to-end when Signal Protocol is available. Metadata residual risk remains; there is no anonymity guarantee. This notice is shown at onboarding (FR-UX-003).</string>
+</resources>
