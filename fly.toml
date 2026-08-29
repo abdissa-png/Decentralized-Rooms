@@ -1,0 +1,29 @@
+# Self-host recipe for a TCP rooms-relay (DRRL). Not a live public service.
+#
+#   fly auth login
+#   fly apps create derooms-relay   # pick a unique name
+#   fly deploy
+#
+# Fly allocates a public IPv4; TCP 44099 is the product port.
+# Paste `<app>.fly.dev:44099` (or the allocated IP:44099) into the app.
+# Confirm with:  nc -vz <host> 44099
+#
+# Hobby/allowance tiers change; this is a recipe, not a guarantee of $0 forever.
+# The relay sees ciphertext + who connected, not plaintext.
+
+app = "derooms-relay"
+primary_region = "ams"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 44099
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[services.ports]]
+    port = 44099
+    handlers = []

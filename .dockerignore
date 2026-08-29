@@ -1,0 +1,8 @@
+.git
+android
+ffi/target
+core/target
+docs/e2e-artifacts
+**/*.apk
+**/.gradle
+**/build
