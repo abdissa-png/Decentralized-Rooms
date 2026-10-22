@@ -597,14 +597,13 @@ mod tests {
         assert!(matches!(err, Err(RelayError::Protocol(_))));
     }
 
-    #[test]
-    fn splice_and_pending_caps_are_positive() {
+    const _: () = {
         assert!(MAX_ACTIVE_SPLICES > 0);
         assert!(MAX_PENDING_SESSIONS > 0);
         assert!(DIAL_ACK_TIMEOUT.as_secs() >= 30);
         assert!(REGISTER_READ_TIMEOUT.as_secs() >= 5);
         assert!(SPLICE_IDLE_TIMEOUT.as_secs() >= 60);
-    }
+    };
 
     #[test]
     fn normalize_relay_host_port_accepts_common_forms() {
