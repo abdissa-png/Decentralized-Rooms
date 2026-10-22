@@ -248,9 +248,7 @@ async fn handle_client(
         }
         let mut first = slot.stream;
         let token_prefix = hex_prefix(&token);
-        eprintln!(
-            "rooms-relay: splice start token={token_prefix}… joiner_role_b={role_b}"
-        );
+        eprintln!("rooms-relay: splice start token={token_prefix}… joiner_role_b={role_b}");
         // Second peer arrived — ACK both, then splice.
         // If the first waiter is already dead (client ACK timeout), demote
         // this joiner to the new pending waiter instead of failing both.
@@ -281,7 +279,10 @@ async fn handle_client(
             let mut n = active_splices.lock().await;
             *n = n.saturating_sub(1);
         }
-        eprintln!("rooms-relay: splice end token={token_prefix}… ok={}", result.is_ok());
+        eprintln!(
+            "rooms-relay: splice end token={token_prefix}… ok={}",
+            result.is_ok()
+        );
         result
         // Token slot is free after splice ends → reconnect / multi-round OK.
     } else {
@@ -474,8 +475,14 @@ mod tests {
         let t_b2 = token.clone();
         let b2 = tokio::spawn(async move { dial_via_relay(&addr_b2, &t_b2, true).await });
         tokio::time::sleep(Duration::from_millis(120)).await;
-        assert!(!b1.is_finished(), "two inbox (role B) waiters must not pair");
-        assert!(!b2.is_finished(), "two inbox (role B) waiters must not pair");
+        assert!(
+            !b1.is_finished(),
+            "two inbox (role B) waiters must not pair"
+        );
+        assert!(
+            !b2.is_finished(),
+            "two inbox (role B) waiters must not pair"
+        );
 
         let addr_a1 = addr.clone();
         let t_a1 = token.clone();

@@ -30,9 +30,8 @@ pub use noise_session::{
 pub use sync_protocol::{sync_behaviour, SyncCodec, SyncPayload, SYNC_PROTOCOL_ID};
 pub use tcp_relay::{
     decode_register, dial_via_relay, dial_via_relay_with_retry, encode_register,
-    normalize_relay_host_port, relay_dial_hint,
-    RelayError, TcpRelayServer, DIAL_ACK_TIMEOUT, MAX_ACTIVE_SPLICES, MAX_PENDING_SESSIONS,
-    PENDING_TTL, RELAY_MAGIC, RELAY_VERSION,
+    normalize_relay_host_port, relay_dial_hint, RelayError, TcpRelayServer, DIAL_ACK_TIMEOUT,
+    MAX_ACTIVE_SPLICES, MAX_PENDING_SESSIONS, PENDING_TTL, RELAY_MAGIC, RELAY_VERSION,
 };
 
 use futures::StreamExt;

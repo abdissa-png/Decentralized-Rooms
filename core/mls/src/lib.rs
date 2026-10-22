@@ -632,8 +632,7 @@ mod tests {
             add_member(&mut alice_group, &alice, charlie.key_package().unwrap()).unwrap();
         process_protocol_message(&mut bob_group, &bob, commit).unwrap();
         let mut charlie_group = join_from_welcome(&charlie, welcome).unwrap();
-        let msg =
-            create_application_message(&mut alice_group, &alice, b"vec").unwrap();
+        let msg = create_application_message(&mut alice_group, &alice, b"vec").unwrap();
         assert_eq!(
             open_application_message(&mut charlie_group, &charlie, msg).unwrap(),
             b"vec"

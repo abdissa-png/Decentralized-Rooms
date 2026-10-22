@@ -28,8 +28,8 @@ pub use wifi_direct::{
 
 use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use rooms_proto::{
-    decode_message_event_wire_v1, decode_sync_ack_v1, decode_sync_have_v1, decode_sync_offer_v1,
-    decode_sync_object_v1, decode_sync_want_v1, encode_message_event_sign_input,
+    decode_message_event_wire_v1, decode_sync_ack_v1, decode_sync_have_v1, decode_sync_object_v1,
+    decode_sync_offer_v1, decode_sync_want_v1, encode_message_event_sign_input,
     encode_message_event_wire_v1, encode_sync_ack_v1, encode_sync_have_v1, encode_sync_object_v1,
     encode_sync_offer_v1, encode_sync_want_v1, sync_object_cid_v1, Cid, ContentType, MessageEvent,
     SyncAckV1, SyncFrameKind, SyncHaveObject, SyncHaveV1, SyncObjectType, SyncOfferV1,
